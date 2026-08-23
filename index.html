@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS Aesthetic Fullscreen Clock</title>
-    <!-- 引入 Apple 常用且極具現代感的 SF Pro 體系字型 -->
+    <title>iOS 27 Clock</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,143 +15,205 @@
             background-color: #000000;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            width: 100vw;
             height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            cursor: pointer;
-            transition: background 0.5s ease;
+            position: relative;
         }
 
-        /* 呼吸燈微光背景，營造高階 OLED 質感 */
-        body::before {
-            content: '';
+        /* 擬真 Apple 智慧型立架/StandBy 橫向框線或外框粗體邊界裝飾 */
+        .bezel-frame {
             position: absolute;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(circle at 50% 50%, rgba(30, 30, 35, 0.4) 0%, rgba(0, 0, 0, 0.9) 80%);
-            z-index: -1;
+            top: 24px;
+            left: 24px;
+            right: 24px;
+            bottom: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
         }
 
-        .container {
-            text-align: center;
+        /* 邊邊精緻刻度裝飾（Apple 錶盤/儀表板高階質感） */
+        .tick-marks-top, .tick-marks-bottom {
+            position: absolute;
+            left: 60px;
+            right: 60px;
+            height: 10px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .tick-marks-top {
+            top: 36px;
+        }
+
+        .tick-marks-bottom {
+            bottom: 36px;
+        }
+
+        .tick {
+            width: 2px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .tick.major {
+            height: 14px;
+            background-color: rgba(255, 255, 255, 0.5);
+            width: 3px;
+        }
+
+        /* 左右兩側邊框刻度 */
+        .tick-marks-left, .tick-marks-right {
+            position: absolute;
+            top: 60px;
+            bottom: 60px;
+            width: 10px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            justify-content: space-between;
+            pointer-events: none;
         }
 
-        /* iOS 鎖定畫面高級日期風格 */
-        .date {
-            font-size: 1.25rem;
-            font-weight: 500;
-            letter-spacing: 2px;
-            color: rgba(235, 235, 245, 0.6);
-            text-transform: uppercase;
+        .tick-marks-left {
+            left: 36px;
         }
 
-        /* 主時鐘：運用精緻的數字排版與蘋果風格字重 */
-        .time-wrapper {
+        .tick-marks-right {
+            right: 36px;
+        }
+
+        .tick-h {
+            height: 2px;
+            width: 8px;
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .tick-h.major {
+            width: 14px;
+            background-color: rgba(255, 255, 255, 0.5);
+            height: 3px;
+        }
+
+        /* 橫向佈局主體 */
+        .widget-landscape {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding-left: 70px;
+            padding-top: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        /* 左上角城市與日期高質感粗體 */
+        .header-info {
             display: flex;
             align-items: baseline;
-            gap: 8px;
+            gap: 16px;
+            margin-bottom: -4px;
+        }
+
+        .city {
+            font-size: 2.2rem;
+            font-weight: 750; /* 超粗體 */
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .date-sub {
+            font-size: 1.3rem;
+            font-weight: 600; /* 粗體 */
+            color: rgba(235, 235, 245, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        /* 時間主體：超粗體極大化橫向展開 */
+        .time-container {
+            display: flex;
+            align-items: baseline;
         }
 
         .time {
-            font-size: 12vw;
-            font-weight: 300;
-            letter-spacing: -3px;
-            color: #f5f5f7;
-            /* 模擬蘋果高階玻璃擬態與極細微暈影 */
-            text-shadow: 0 0 40px rgba(255, 255, 255, 0.15);
+            font-size: 19vw;
+            font-weight: 750; /* Apple 頂級粗體數字 */
+            letter-spacing: -6px;
+            color: #ffffff;
             font-variant-numeric: tabular-nums;
-        }
-
-        .seconds {
-            font-size: 3.5vw;
-            font-weight: 300;
-            color: rgba(235, 235, 245, 0.4);
-            font-variant-numeric: tabular-nums;
-            margin-bottom: 2.2vw;
-        }
-
-        /* 底部提示與控制按鈕（平時半隱藏，滑鼠移入時顯現） */
-        .footer-hint {
-            position: absolute;
-            bottom: 30px;
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.2);
-            letter-spacing: 1px;
-            transition: opacity 0.4s ease;
-            opacity: 0;
-        }
-
-        body:hover .footer-hint {
-            opacity: 1;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.98);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            line-height: 0.95;
+            text-shadow: 0 0 60px rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="date" id="date">--</div>
-        <div class="time-wrapper">
+    <!-- 外框線 -->
+    <div class="bezel-frame"></div>
+
+    <!-- 上下左右精密刻度 -->
+    <div class="tick-marks-top" id="ticksTop"></div>
+    <div class="tick-marks-bottom" id="ticksBottom"></div>
+    <div class="tick-marks-left" id="ticksLeft"></div>
+    <div class="tick-marks-right" id="ticksRight"></div>
+
+    <div class="widget-landscape">
+        <div class="header-info">
+            <div class="city">台北</div>
+            <div class="date-sub" id="dateSub">--</div>
+        </div>
+        <div class="time-container">
             <div class="time" id="time">00:00</div>
-            <div class="seconds" id="seconds">00</div>
         </div>
     </div>
 
-    <div class="footer-hint">點擊任意處切換全螢幕</div>
-
     <script>
-        function updateClock() {
-            const now = new Date();
+        // 動態生成刻度
+        function createTicks() {
+            const topBottomCount = 24;
+            const leftRightCount = 12;
 
-            // 格式化日期：例如 "8月23日 星期日"
-            const options = { month: 'long', day: 'numeric', weekday: 'long' };
-            const dateString = now.toLocaleDateString('zh-TW', options);
-            document.getElementById('date').textContent = dateString;
+            const ticksTop = document.getElementById('ticksTop');
+            const ticksBottom = document.getElementById('ticksBottom');
+            const ticksLeft = document.getElementById('ticksLeft');
+            const ticksRight = document.getElementById('ticksRight');
 
-            // 格式化時間 (24小時制或精準數字)
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
+            for (let i = 0; i <= topBottomCount; i++) {
+                const isMajor = i % 4 === 0;
+                ticksTop.innerHTML += `<div class="tick ${isMajor ? 'major' : ''}"></div>`;
+                ticksBottom.innerHTML += `<div class="tick ${isMajor ? 'major' : ''}"></div>`;
+            }
 
-            document.getElementById('time').textContent = `${hours}:${minutes}`;
-            document.getElementById('seconds').textContent = seconds;
+            for (let i = 0; i <= leftRightCount; i++) {
+                const isMajor = i % 4 === 0;
+                ticksLeft.innerHTML += `<div class="tick-h ${isMajor ? 'major' : ''}"></div>`;
+                ticksRight.innerHTML += `<div class="tick-h ${isMajor ? 'major' : ''}"></div>`;
+            }
         }
 
-        // 每秒更新
+        function updateClock() {
+            const now = new Date();
+            
+            // 城市日期格式化
+            const options = { month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('dateSub').textContent = now.toLocaleDateString('zh-TW', options);
+
+            // 時間格式化
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('time').textContent = `${hours}:${minutes}`;
+        }
+
+        createTicks();
         setInterval(updateClock, 1000);
         updateClock();
-
-        // 點擊畫面自動切換全螢幕功能
-        document.body.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((err) => {
-                    console.log(`無法切換全螢幕: ${err.message}`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        });
     </script>
-
 </body>
 </html>
