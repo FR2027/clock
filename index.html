@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fullscreen iOS Widget Clock</title>
+    <title>iOS Live Aesthetic Clock</title>
     <style>
         * {
             box-sizing: border-box;
@@ -25,15 +25,14 @@
             position: relative;
         }
 
-        /* 全螢幕主容器（帶有 iOS 質感粗框與邊框刻度） */
-        .fullscreen-widget {
+        /* 全螢幕背景容器 */
+        .fullscreen-container {
             position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             background-color: #000000;
-            border: 12px solid rgba(255, 255, 255, 0.18);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -41,84 +40,83 @@
             overflow: hidden;
         }
 
-        /* 沿著全螢幕邊框內側排列的精密斜線刻度 */
+        /* 沿著畫面邊緣排列的動態跑秒刻度 */
         .edge-tick {
             position: absolute;
-            width: 12px;
-            height: 4px;
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.18);
             border-radius: 2px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
             pointer-events: none;
         }
-        .edge-tick.major {
-            width: 20px;
-            height: 5px;
-            background-color: rgba(255, 255, 255, 0.75);
+        /* 當秒數走到該刻度時亮起（模擬 iOS 錶盤跑秒進度） */
+        .edge-tick.active {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
         }
 
-        /* 內容群組 */
+        /* 核心時鐘群組 */
         .clock-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 2;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
         }
 
-        /* 城市名稱（點擊切換時區） */
+        /* 雙擊觸發的城市標題 */
         .city-header {
-            font-size: 3rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.65);
-            margin-bottom: 10px;
+            font-size: 2.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
             cursor: pointer;
             user-select: none;
+            letter-spacing: 1.5px;
             transition: color 0.2s, transform 0.2s;
-            letter-spacing: 2px;
         }
         .city-header:hover {
             color: #ffffff;
-            transform: scale(1.03);
+            transform: scale(1.02);
+        }
+        .city-header:active {
+            transform: scale(0.97);
         }
 
-        /* 超大時間數字 */
+        /* 超大粗體時間數字 */
         .time-display {
-            font-size: 32vw;
+            font-size: 30vw;
             font-weight: 800;
-            letter-spacing: -10px;
+            letter-spacing: -8px;
             color: #ffffff;
             font-variant-numeric: tabular-nums;
-            line-height: 0.9;
+            line-height: 0.95;
             user-select: none;
         }
 
         @media (min-width: 1200px) {
             .time-display {
-                font-size: 380px;
-            }
-            .city-header {
-                font-size: 3.5rem;
+                font-size: 340px;
             }
         }
 
-        /* 24 時區選單 */
+        /* 隱藏式 24 時區選單（蘋果風格模糊玻璃擬態） */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-overlay.active {
@@ -127,43 +125,43 @@
         }
 
         .modal-card {
-            background: rgba(30, 30, 35, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 32px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
+            background: rgba(30, 30, 35, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 36px;
+            width: 88%;
+            max-width: 580px;
+            max-height: 78vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9);
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.85);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .modal-overlay.active .modal-card {
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
 
         .modal-header {
-            padding: 24px 28px 16px;
-            font-size: 1.4rem;
+            padding: 24px 28px 18px;
+            font-size: 1.3rem;
             font-weight: 700;
             color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .modal-close {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             border: none;
             color: #fff;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -171,7 +169,7 @@
             transition: background 0.2s;
         }
         .modal-close:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .timezone-list {
@@ -179,62 +177,64 @@
             padding: 20px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 10px;
         }
 
         .timezone-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 16px 18px;
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px 16px;
+            border-radius: 18px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
 
         .timezone-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
         }
 
         .timezone-item.selected {
-            background: rgba(10, 132, 255, 0.35);
-            border-color: rgba(10, 132, 255, 0.7);
+            background: rgba(0, 113, 227, 0.35);
+            border-color: rgba(0, 125, 250, 0.7);
         }
 
         .tz-city {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #fff;
         }
 
         .tz-sub {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.45);
         }
 
         .timezone-list::-webkit-scrollbar {
             width: 6px;
         }
         .timezone-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 3px;
         }
     </style>
 </head>
 <body>
 
-    <div class="fullscreen-widget" id="widgetContainer">
-        <!-- 內容區 -->
+    <div class="fullscreen-container" id="container">
+        <!-- 核心時鐘區 -->
         <div class="clock-content" id="clockContent">
-            <div class="city-header" id="cityHeader" title="點擊選擇時區">載入中...</div>
+            <!-- 雙擊地名呼叫隱藏選單 -->
+            <div class="city-header" id="cityHeader" title="請對著地名「雙擊兩下」開啟時區選單">載入中...</div>
             <div class="time-display" id="timeDisplay">00:00</div>
         </div>
     </div>
 
-    <!-- 24 時區選單 -->
+    <!-- 24 時區選單彈窗 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-card">
             <div class="modal-header">
@@ -246,8 +246,9 @@
     </div>
 
     <script>
+        // 24 個全球經典時區清單
         const timezones = [
-            { name: "台北 / 北京", zone: "Asia/Taipei", label: "UTC+8" },
+            { name: "台北", zone: "Asia/Taipei", label: "UTC+8" },
             { name: "東京", zone: "Asia/Tokyo", label: "UTC+9" },
             { name: "首爾", zone: "Asia/Seoul", label: "UTC+9" },
             { name: "香港 / 新加坡", zone: "Asia/Hong_Kong", label: "UTC+8" },
@@ -275,61 +276,68 @@
 
         let selectedTimezone = null;
         let selectedCityName = "";
+        const totalTicks = 60; // 60 個刻度對應 60 秒
+        const tickElements = [];
 
+        // 初始化：預設抓取目前位置
         function initLocation() {
             try {
-                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const found = timezones.find(t => t.zone === tz);
+                const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const found = timezones.find(t => t.zone === systemTz);
                 if (found) {
-                    selectedCityName = found.name.split('/')[0].trim();
                     selectedTimezone = found.zone;
+                    selectedCityName = found.name;
                 } else {
-                    selectedCityName = "台北";
                     selectedTimezone = "Asia/Taipei";
+                    selectedCityName = "台北";
                 }
             } catch (e) {
-                selectedCityName = "台北";
                 selectedTimezone = "Asia/Taipei";
+                selectedCityName = "台北";
             }
             document.getElementById('cityHeader').textContent = selectedCityName;
         }
 
-        // 生成全螢幕邊框內側的刻度
+        // 動態生成環繞螢幕邊緣的 60 秒跑秒刻度
         function generateTicks() {
-            const container = document.getElementById('widgetContainer');
-            // 上下左右各排佈刻度
-            const countPerSide = 18; 
+            const container = document.getElementById('container');
+            
+            for (let i = 0; i < totalTicks; i++) {
+                const tick = document.createElement('div');
+                tick.className = 'edge-tick';
+                
+                // 依據秒數分配在四個邊上 (上、右、下、左)
+                let leftPct, topPct, width = '10px', height = '3px';
+                
+                if (i < 15) { // 上邊 (0~14秒)
+                    leftPct = (i / 15) * 96 + 2;
+                    topPct = 2;
+                    width = '8px'; height = '3px';
+                } else if (i < 30) { // 右邊 (15~29秒)
+                    leftPct = 98;
+                    topPct = ((i - 15) / 15) * 96 + 2;
+                    width = '3px'; height = '8px';
+                } else if (i < 45) { // 下邊 (30~44秒)
+                    leftPct = 100 - ((i - 30) / 15) * 96 - 2;
+                    topPct = 98;
+                    width = '8px'; height = '3px';
+                } else { // 左邊 (45~59秒)
+                    leftPct = 2;
+                    topPct = 100 - ((i - 45) / 15) * 96 - 2;
+                    width = '3px'; height = '8px';
+                }
 
-            // 上邊
-            for (let i = 0; i <= countPerSide; i++) {
-                createTick((i / countPerSide) * 100, 2.5, 0);
-            }
-            // 下邊
-            for (let i = 0; i <= countPerSide; i++) {
-                createTick((i / countPerSide) * 100, 97.5, 0);
-            }
-            // 左邊
-            for (let i = 1; i < countPerSide; i++) {
-                createTick(2.5, (i / countPerSide) * 100, 90);
-            }
-            // 右邊
-            for (let i = 1; i < countPerSide; i++) {
-                createTick(97.5, (i / countPerSide) * 100, 90);
+                tick.style.left = `${leftPct}%`;
+                tick.style.top = `${topPct}%`;
+                tick.style.width = width;
+                tick.style.height = height;
+
+                container.appendChild(tick);
+                tickElements.push(tick);
             }
         }
 
-        function createTick(leftPct, topPct, rotateDeg) {
-            const container = document.getElementById('widgetContainer');
-            const tick = document.createElement('div');
-            // 讓部分刻度變大（類似錶盤主刻度）
-            const isMajor = (Math.round(leftPct + topPct) % 5 === 0);
-            tick.className = `edge-tick ${isMajor ? 'major' : ''}`;
-            tick.style.left = `${leftPct}%`;
-            tick.style.top = `${topPct}%`;
-            tick.style.transform = `translate(-50%, -50%) rotate(${rotateDeg}deg)`;
-            container.appendChild(tick);
-        }
-
+        // 渲染時區選單
         function renderList() {
             const list = document.getElementById('timezoneList');
             list.innerHTML = '';
@@ -342,10 +350,11 @@
                 `;
                 item.addEventListener('click', () => {
                     selectedTimezone = t.zone;
-                    selectedCityName = t.name.split('/')[0].trim();
+                    selectedCityName = t.name;
                     document.getElementById('cityHeader').textContent = selectedCityName;
                     
-                    triggerAnim();
+                    // 切換時區時的流暢縮放動效
+                    triggerTransitionAnim();
                     toggleModal(false);
                     renderList();
                 });
@@ -353,38 +362,63 @@
             });
         }
 
-        function triggerAnim() {
+        function triggerTransitionAnim() {
             const content = document.getElementById('clockContent');
-            content.style.transform = 'scale(0.95)';
+            content.style.transform = 'scale(0.92)';
             content.style.opacity = '0.2';
             setTimeout(() => {
                 content.style.transform = 'scale(1)';
                 content.style.opacity = '1';
-            }, 250);
+            }, 300);
         }
 
-        function updateTime() {
+        // 更新時間與秒數跑格刻度
+        function updateClock() {
             const now = new Date();
             let timeStr = "";
+            let currentSecond = 0;
+
             try {
-                timeStr = new Intl.DateTimeFormat('en-GB', {
+                // 取得對應時區的時間與秒數
+                const formatter = new Intl.DateTimeFormat('en-GB', {
                     timeZone: selectedTimezone,
                     hour: '2-digit',
                     minute: '2-digit',
+                    second: '2-digit',
                     hour12: false
-                }).format(now);
+                });
+                const parts = formatter.formatToParts(now);
+                const h = parts.find(p => p.type === 'hour').value;
+                const m = parts.find(p => p.type === 'minute').value;
+                const s = parts.find(p => p.type === 'second').value;
+                
+                timeStr = `${h}:${m}`;
+                currentSecond = parseInt(s, 10);
             } catch (e) {
                 const h = String(now.getHours()).padStart(2, '0');
                 const m = String(now.getMinutes()).padStart(2, '0');
+                const s = now.getSeconds();
                 timeStr = `${h}:${m}`;
+                currentSecond = s;
             }
 
+            // 更新大數字
             const timeEl = document.getElementById('timeDisplay');
             if (timeEl.textContent !== timeStr) {
                 timeEl.textContent = timeStr;
             }
+
+            // 更新邊框跑秒刻度（當前秒數之前的刻度亮起，呈現類似 iOS 錶盤流動感）
+            tickElements.forEach((tick, index) => {
+                if (index <= currentSecond) {
+                    tick.classList.add('active');
+                } else {
+                    tick.classList.remove('active');
+                }
+            });
         }
 
+        // 彈窗雙擊互動控制
         const overlay = document.getElementById('modalOverlay');
         const cityHeader = document.getElementById('cityHeader');
         const closeBtn = document.getElementById('modalClose');
@@ -397,17 +431,23 @@
             }
         }
 
-        cityHeader.addEventListener('click', () => toggleModal(true));
+        // 嚴格實作「雙擊 (dblclick)」觸發隱藏選單
+        cityHeader.addEventListener('dblclick', () => {
+            toggleModal(true);
+        });
+
+        // 為了手機觸控或避免誤觸，提供備用：點擊一下也可以或維持雙擊（你要求雙擊，此處以 dblclick 為主）
         closeBtn.addEventListener('click', () => toggleModal(false));
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) toggleModal(false);
         });
 
+        // 啟動執行
         generateTicks();
         initLocation();
         renderList();
-        setInterval(updateTime, 100);
-        updateTime();
+        setInterval(updateClock, 200);
+        updateClock();
     </script>
 </body>
 </html>
