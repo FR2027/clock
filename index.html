@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FR Clock - iOS StandBy Liquid Glass</title>
+    <title>FR Clock</title>
     <style>
         * {
             box-sizing: border-box;
@@ -23,16 +23,29 @@
             align-items: center;
             overflow: hidden;
             position: relative;
-            /* iOS 待機緩慢變色的高質感漸層背景 */
-            background: linear-gradient(135deg, #050508, #120c1f, #070e17, #000000);
-            background-size: 400% 400%;
-            animation: standbyGradient 25s ease infinite;
+            /* iOS 鎖定畫面高級流動漸層背景 */
+            background: linear-gradient(125deg, #090612, #18112c, #0a1122, #020204);
+            background-size: 350% 350%;
+            animation: lockscreenGlow 22s ease infinite;
         }
 
-        @keyframes standbyGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        @keyframes lockscreenGlow {
+            0% { background-position: 0% 40%; }
+            50% { background-position: 100% 60%; }
+            100% { background-position: 0% 40%; }
+        }
+
+        /* 增加一層擬真光學微光網格，提升背景質感 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 30%, rgba(120, 110, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         /* 全螢幕背景容器 */
@@ -47,6 +60,7 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            z-index: 2;
         }
 
         /* 核心時鐘群組 */
@@ -55,46 +69,46 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 2;
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
         }
 
         /* 雙擊觸發的城市標題 */
         .city-header {
-            font-size: 2.5rem;
+            font-size: 2.4rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.45);
-            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 14px;
             cursor: pointer;
             user-select: none;
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             transition: color 0.25s ease, transform 0.25s ease;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
         .city-header:hover {
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.95);
             transform: scale(1.02);
         }
         .city-header:active {
             transform: scale(0.97);
         }
 
-        /* 頂級 40% 半透明 Liquid Glass 質感大時間數字 */
+        /* 🎯 iOS 鎖定畫面 Liquid Glass 質感大時間數字 */
         .time-display {
             font-size: 30vw;
             font-weight: 700;
-            letter-spacing: -8px;
-            /* 40% 半透明白色，呈現通透的液態玻璃感 */
-            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: -6px;
+            /* 40% 半透明讓背景微微透過去，達成真正的液態透光感 */
+            color: rgba(255, 255, 255, 0.38);
             font-variant-numeric: tabular-nums;
             line-height: 0.9;
-            /* 結合透光陰影與微弱邊緣發光，營造真實玻璃字體質感 */
-            text-shadow: 
-                0 0 40px rgba(255, 255, 255, 0.15),
-                0 0 80px rgba(100, 150, 255, 0.08),
-                0 2px 5px rgba(0, 0, 0, 0.8);
             user-select: none;
-            backdrop-filter: blur(1px);
-            -webkit-backdrop-filter: blur(1px);
+            /* 關鍵：iOS 鎖定畫面字體特有的光學微陰影與邊緣高光反射 */
+            text-shadow: 
+                0 1px 2px rgba(255, 255, 255, 0.6), /* 字體頂部的高光邊緣 */
+                0 4px 20px rgba(0, 0, 0, 0.85),     /* 整體立體深層陰影 */
+                0 0 50px rgba(255, 255, 255, 0.12);  /* 邊緣微弱的琉璃發光 */
+            backdrop-filter: blur(0.5px);
+            -webkit-backdrop-filter: blur(0.5px);
         }
 
         @media (min-width: 1200px) {
