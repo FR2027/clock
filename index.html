@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FR Clock - Liquid Glass Edition</title>
+    <title>FR Clock - iOS Liquid Glass Ultra Edition</title>
     <style>
         * {
             box-sizing: border-box;
@@ -12,8 +12,29 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shine: rgba(255, 255, 255, 0.25);
+            --primary-glow: rgba(0, 113, 227, 0.25);
+            --secondary-glow: rgba(191, 90, 242, 0.15);
+        }
+
+        body.theme-silver {
+            --primary-glow: rgba(255, 255, 255, 0.2);
+            --secondary-glow: rgba(150, 150, 180, 0.1);
+        }
+        body.theme-purple {
+            --primary-glow: rgba(175, 82, 222, 0.25);
+            --secondary-glow: rgba(88, 86, 214, 0.2);
+        }
+        body.theme-amber {
+            --primary-glow: rgba(255, 159, 10, 0.25);
+            --secondary-glow: rgba(255, 55, 95, 0.15);
+        }
+
         body {
-            background-color: #030305;
+            background-color: #050507;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             width: 100vw;
@@ -23,30 +44,56 @@
             align-items: center;
             overflow: hidden;
             position: relative;
+            transition: background 0.8s ease;
         }
 
-        /* 動態液態玻璃光斑背景 */
-        .ambient-glow {
+        /* iOS 26 擬真液態流動背景光斑 (Liquid Mesh Orbs) */
+        .liquid-bg {
             position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(29, 78, 216, 0.15) 0%, rgba(147, 51, 234, 0.08) 40%, transparent 70%);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
             z-index: 1;
             pointer-events: none;
-            filter: blur(80px);
-            animation: pulseGlow 8s ease-in-out infinite alternate;
+            filter: blur(90px);
+            opacity: 0.85;
         }
 
-        @keyframes pulseGlow {
-            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
-            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            will-change: transform;
+            animation: liquidFloat 18s ease-in-out infinite alternate;
         }
 
-        /* 全螢幕背景容器 */
+        .orb-1 {
+            width: 50vw;
+            height: 50vw;
+            background: var(--primary-glow);
+            top: -10%;
+            left: -10%;
+            animation-duration: 15s;
+        }
+
+        .orb-2 {
+            width: 45vw;
+            height: 45vw;
+            background: var(--secondary-glow);
+            bottom: -15%;
+            right: -10%;
+            animation-duration: 22s;
+            animation-direction: alternate-reverse;
+        }
+
+        @keyframes liquidFloat {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(60px, 40px) scale(1.15); }
+            100% { transform: translate(-40px, 70px) scale(0.95); }
+        }
+
+        /* 核心全螢幕容器 */
         .fullscreen-container {
             position: absolute;
             top: 0;
@@ -57,143 +104,169 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
             z-index: 2;
         }
 
-        /* 核心時鐘群組 */
         .clock-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 2;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
         }
 
-        /* 城市標題與日期 */
+        /* 頂級城市與日期列 */
         .city-header {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.65);
+            margin-bottom: 6px;
             cursor: pointer;
             user-select: none;
             letter-spacing: 2px;
-            transition: color 0.25s ease, transform 0.25s ease;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         .city-header:hover {
-            color: rgba(255, 255, 255, 0.95);
-            transform: scale(1.02);
+            color: rgba(255, 255, 255, 0.98);
+            transform: scale(1.03);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
         }
 
         .date-display {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 400;
-            color: rgba(255, 255, 255, 0.4);
-            margin-bottom: 24px;
-            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-bottom: 28px;
+            letter-spacing: 1.5px;
             user-select: none;
         }
 
-        /* iOS Liquid Glass 頂級質感時鐘數字區 */
-        .time-display-wrapper {
+        /* 真正的 iOS Liquid Glass 時鐘主膠囊外殼 */
+        .time-glass-container {
             position: relative;
-            padding: 20px 40px;
-            border-radius: 40px;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 32px 56px;
+            border-radius: 48px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            /* 關鍵：雙層高光邊框與內外陰影打造鏡面厚度 */
+            border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+                0 40px 100px rgba(0, 0, 0, 0.7),
+                inset 0 1.5px 0 rgba(255, 255, 255, 0.35), /* 頂部高光折射線 */
+                inset 0 -1.5px 0 rgba(255, 255, 255, 0.08), /* 底部微光 */
+                0 0 40px var(--primary-glow);
             cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+            user-select: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
         }
 
-        .time-display-wrapper:hover {
-            background: rgba(255, 255, 255, 0.06);
-            transform: scale(1.01);
-            border-color: rgba(255, 255, 255, 0.18);
+        .time-glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            transform: skewX(-20deg);
+            animation: glassSweep 6s ease-in-out infinite;
+        }
+
+        @keyframes glassSweep {
+            0% { left: -150%; }
+            20% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        .time-glass-container:hover {
+            transform: scale(1.02) translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
             box-shadow: 
-                0 40px 80px rgba(0, 0, 0, 0.7),
-                inset 0 1px 0 rgba(255, 255, 255, 0.25),
-                0 0 30px rgba(255, 255, 255, 0.05);
+                0 50px 120px rgba(0, 0, 0, 0.85),
+                inset 0 2px 0 rgba(255, 255, 255, 0.5),
+                inset 0 -2px 0 rgba(255, 255, 255, 0.15),
+                0 0 60px var(--primary-glow);
         }
 
+        /* 超大擬真晶透數字 */
         .time-display {
-            font-size: 22vw;
+            font-size: 19vw;
             font-weight: 700;
-            letter-spacing: -6px;
+            letter-spacing: -4px;
             color: #ffffff;
             font-variant-numeric: tabular-nums;
             line-height: 0.9;
-            /* Liquid Glass 專屬立體多重光影陰影 */
-            text-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.8),
-                0 0 40px rgba(255, 255, 255, 0.25),
-                0 0 80px rgba(59, 130, 246, 0.15);
-            user-select: none;
             display: flex;
             align-items: baseline;
-            gap: 10px;
+            gap: 12px;
+            /* 晶透發光字體投影 */
+            text-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.9),
+                0 0 30px rgba(255, 255, 255, 0.3),
+                0 0 70px rgba(255, 255, 255, 0.1);
         }
 
         .seconds-span {
-            font-size: 8vw;
+            font-size: 7vw;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.5);
-            letter-spacing: -2px;
+            color: rgba(255, 255, 255, 0.55);
+            letter-spacing: -1px;
         }
 
         .ampm-span {
-            font-size: 5vw;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.6);
-            margin-left: 10px;
+            font-size: 4.5vw;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-left: 8px;
         }
 
         @media (min-width: 1200px) {
-            .time-display {
-                font-size: 240px;
-            }
-            .seconds-span {
-                font-size: 90px;
-            }
-            .ampm-span {
-                font-size: 60px;
-            }
+            .time-display { font-size: 210px; }
+            .seconds-span { font-size: 80px; }
+            .ampm-span { font-size: 50px; }
         }
 
-        /* 提示標籤 */
-        .hint-text {
-            margin-top: 20px;
+        /* 互動控制提示列 */
+        .hint-bar {
+            margin-top: 24px;
+            display: flex;
+            gap: 16px;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.35);
             letter-spacing: 0.5px;
             user-select: none;
         }
 
-        /* iOS 高級毛玻璃擬態彈窗 */
+        .hint-bar span {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .hint-bar span:hover {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: underline;
+        }
+
+        /* 彈窗毛玻璃背景 */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .modal-overlay.active {
@@ -202,18 +275,18 @@
         }
 
         .modal-card {
-            background: rgba(22, 22, 28, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 36px;
-            width: 85%;
-            max-width: 580px;
-            max-height: 78vh;
+            background: rgba(20, 20, 26, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 40px;
+            width: 88%;
+            max-width: 600px;
+            max-height: 80vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-            transform: scale(0.92) translateY(15px);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 60px 120px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .modal-overlay.active .modal-card {
@@ -221,115 +294,125 @@
         }
 
         .modal-header {
-            padding: 24px 28px 18px;
-            font-size: 1.25rem;
+            padding: 28px 32px 20px;
+            font-size: 1.3rem;
             font-weight: 600;
             color: #fff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            letter-spacing: 0.5px;
         }
 
         .modal-close {
             background: rgba(255, 255, 255, 0.08);
             border: none;
             color: #fff;
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, transform 0.2s;
+            transition: all 0.2s ease;
         }
         .modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.08);
         }
 
         .timezone-list {
             overflow-y: auto;
-            padding: 20px;
+            padding: 24px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 14px;
         }
 
         .timezone-item {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 15px 18px;
-            border-radius: 20px;
+            padding: 16px 20px;
+            border-radius: 22px;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
         }
 
         .timezone-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.09);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .timezone-item.selected {
-            background: rgba(10, 132, 255, 0.25);
-            border-color: rgba(10, 132, 255, 0.6);
+            background: rgba(0, 113, 227, 0.3);
+            border-color: rgba(0, 113, 227, 0.7);
+            box-shadow: 0 0 25px rgba(0, 113, 227, 0.4);
         }
 
         .tz-city {
             font-weight: 600;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             color: #fff;
         }
 
         .tz-sub {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             color: rgba(255, 255, 255, 0.45);
         }
 
-        .timezone-list::-webkit-scrollbar {
-            width: 6px;
-        }
+        .timezone-list::-webkit-scrollbar { width: 6px; }
         .timezone-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 3px;
         }
     </style>
 </head>
-<body>
+<body class="theme-purple">
 
-    <div class="ambient-glow"></div>
+    <!-- 流動光暈背景 -->
+    <div class="liquid-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
 
-    <div class="fullscreen-container" id="container">
+    <div class="fullscreen-container">
         <div class="clock-content" id="clockContent">
-            <!-- 雙擊地名選擇時區 -->
-            <div class="city-header" id="cityHeader" title="雙擊選擇時區">載入中...</div>
+            <!-- 城市標題（雙擊叫出時區） -->
+            <div class="city-header" id="cityHeader" title="雙擊變更時區">載入中...</div>
             <div class="date-display" id="dateDisplay">--/--/---- 週--</div>
             
-            <!-- 點擊時鐘本體可切換 12/24 小時制 -->
-            <div class="time-display-wrapper" id="timeWrapper" title="點擊切換 12/24 小時制">
+            <!-- 核心液態玻璃時鐘本體 -->
+            <div class="time-glass-container" id="timeWrapper" title="點擊切換 12/24 小時制">
                 <div class="time-display" id="timeDisplay">
                     <span id="mainTime">00:00</span>
-                    <span class="seconds-span" id="secondsSpan" style="display: none;">:00</span>
+                    <span class="seconds-span" id="secondsSpan">:00</span>
                     <span class="ampm-span" id="ampmSpan" style="display: none;">AM</span>
                 </div>
             </div>
-            
-            <div class="hint-text">雙擊上方城市更改時區 ｜ 點擊時鐘切換 12/24 小時制</div>
+
+            <!-- 功能提示 -->
+            <div class="hint-bar">
+                <span id="btnToggleSec">切換秒數顯示</span>
+                <span>•</span>
+                <span id="btnToggleTheme">切換琉璃色彩</span>
+                <span>•</span>
+                <span id="btnOpenModal">選擇時區清單</span>
+            </div>
         </div>
     </div>
 
-    <!-- 24 時區選單彈窗 -->
+    <!-- 時區選單彈窗 -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-card">
             <div class="modal-header">
-                <span>選擇時區 (共 24 個全球城市)</span>
+                <span>全球核心時區 (共 24 城市)</span>
                 <button class="modal-close" id="modalClose">&times;</button>
             </div>
             <div class="timezone-list" id="timezoneList"></div>
@@ -367,7 +450,11 @@
         let selectedTimezone = "Asia/Taipei";
         let selectedCityName = "台北";
         let is24Hour = true;
-        let showSeconds = true; // 預設開啟秒數以展現動態感
+        let showSeconds = true;
+
+        // 主題切換陣列
+        const themes = ['', 'theme-silver', 'theme-purple', 'theme-amber'];
+        let currentThemeIdx = 2; // 預設 purple
 
         function initLocation() {
             try {
@@ -395,7 +482,7 @@
                     selectedTimezone = t.zone;
                     selectedCityName = t.name;
                     document.getElementById('cityHeader').textContent = selectedCityName;
-                    triggerTransitionAnim();
+                    triggerAnim();
                     toggleModal(false);
                     renderList();
                 });
@@ -403,32 +490,27 @@
             });
         }
 
-        function triggerTransitionAnim() {
+        function triggerAnim() {
             const content = document.getElementById('clockContent');
-            content.style.transform = 'scale(0.92)';
-            content.style.opacity = '0.2';
+            content.style.transform = 'scale(0.95)';
+            content.style.opacity = '0.3';
             setTimeout(() => {
                 content.style.transform = 'scale(1)';
                 content.style.opacity = '1';
-            }, 300);
+            }, 350);
         }
 
         function updateClock() {
             const now = new Date();
-
             try {
-                // 取得對應時區的時間字串
-                const formatterOpts = {
+                const formatter = new Intl.DateTimeFormat('en-US', {
                     timeZone: selectedTimezone,
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: !is24Hour
-                };
-                
-                const formatter = new Intl.DateTimeFormat('en-US', formatterOpts);
+                });
                 const parts = formatter.formatToParts(now);
-                
                 let h = "00", m = "00", s = "00", dayPeriod = "";
                 parts.forEach(p => {
                     if (p.type === 'hour') h = p.value;
@@ -437,7 +519,6 @@
                     if (p.type === 'dayPeriod') dayPeriod = p.value;
                 });
 
-                // 更新日期
                 const dateFormatter = new Intl.DateTimeFormat('zh-TW', {
                     timeZone: selectedTimezone,
                     year: 'numeric',
@@ -446,58 +527,51 @@
                     weekday: 'short'
                 });
                 document.getElementById('dateDisplay').textContent = dateFormatter.format(now);
-
-                // 更新時間內容
                 document.getElementById('mainTime').textContent = `${h}:${m}`;
-                
+
                 const secEl = document.getElementById('secondsSpan');
-                if (showSeconds) {
-                    secEl.style.display = 'inline';
-                    secEl.textContent = `:${s}`;
-                } else {
-                    secEl.style.display = 'none';
-                }
+                secEl.style.display = showSeconds ? 'inline' : 'none';
+                secEl.textContent = `:${s}`;
 
                 const ampmEl = document.getElementById('ampmSpan');
-                if (!is24Hour) {
-                    ampmEl.style.display = 'inline';
-                    ampmEl.textContent = dayPeriod;
-                } else {
-                    ampmEl.style.display = 'none';
-                }
-
-            } catch (e) {
-                document.getElementById('mainTime').textContent = "00:00";
-            }
+                ampmEl.style.display = !is24Hour ? 'inline' : 'none';
+                ampmEl.textContent = dayPeriod;
+            } catch (e) {}
         }
 
-        // 互動控制
+        // 互動與事件綁定
         const overlay = document.getElementById('modalOverlay');
         const cityHeader = document.getElementById('cityHeader');
         const closeBtn = document.getElementById('modalClose');
         const timeWrapper = document.getElementById('timeWrapper');
 
         function toggleModal(show) {
-            if (show) {
-                overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-            }
+            overlay.classList.toggle('active', show);
         }
 
         cityHeader.addEventListener('dblclick', () => toggleModal(true));
+        document.getElementById('btnOpenModal').addEventListener('click', () => toggleModal(true));
         closeBtn.addEventListener('click', () => toggleModal(false));
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) toggleModal(false);
-        });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) toggleModal(false); });
 
-        // 點擊時鐘切換 12/24 小時制
         timeWrapper.addEventListener('click', () => {
             is24Hour = !is24Hour;
-            triggerTransitionAnim();
+            triggerAnim();
         });
 
-        // 初始化執行
+        document.getElementById('btnToggleSec').addEventListener('click', () => {
+            showSeconds = !showSeconds;
+        });
+
+        document.getElementById('btnToggleTheme').addEventListener('click', () => {
+            document.body.className = '';
+            currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+            if (themes[currentThemeIdx]) {
+                document.body.classList.add(themes[currentThemeIdx]);
+            }
+        });
+
+        // 啟動
         initLocation();
         renderList();
         setInterval(updateClock, 100);
