@@ -23,10 +23,10 @@
             align-items: center;
             overflow: hidden;
             position: relative;
-            /* iOS 鎖定畫面高級流動漸層背景 */
+            /* iOS 鎖定畫面高級流動漸層背景：深邃藍紫與星空感交織 */
             background: linear-gradient(125deg, #090612, #18112c, #0a1122, #020204);
             background-size: 350% 350%;
-            animation: lockscreenGlow 22s ease infinite;
+            animation: lockscreenGlow 25s ease infinite;
         }
 
         @keyframes lockscreenGlow {
@@ -35,7 +35,7 @@
             100% { background-position: 0% 40%; }
         }
 
-        /* 增加一層擬真光學微光網格，提升背景質感 */
+        /* 擬真光學微光網格，提升背景光影層次 */
         body::before {
             content: '';
             position: absolute;
@@ -43,7 +43,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: radial-gradient(circle at 50% 30%, rgba(120, 110, 255, 0.08) 0%, transparent 60%);
+            background: radial-gradient(circle at 50% 30%, rgba(120, 110, 255, 0.1) 0%, transparent 65%);
             pointer-events: none;
             z-index: 1;
         }
@@ -69,7 +69,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
         }
 
         /* 雙擊觸發的城市標題 */
@@ -92,21 +91,23 @@
             transform: scale(0.97);
         }
 
-        /* 🎯 iOS 鎖定畫面 Liquid Glass 質感大時間數字 */
+        /* iOS 鎖定畫面 Liquid Glass 質感時間容器 */
         .time-display {
             font-size: 30vw;
             font-weight: 700;
             letter-spacing: -6px;
-            /* 40% 半透明讓背景微微透過去，達成真正的液態透光感 */
             color: rgba(255, 255, 255, 0.38);
             font-variant-numeric: tabular-nums;
             line-height: 0.9;
             user-select: none;
-            /* 關鍵：iOS 鎖定畫面字體特有的光學微陰影與邊緣高光反射 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 蘋果鎖定畫面經典高光與深度陰影 */
             text-shadow: 
-                0 1px 2px rgba(255, 255, 255, 0.6), /* 字體頂部的高光邊緣 */
-                0 4px 20px rgba(0, 0, 0, 0.85),     /* 整體立體深層陰影 */
-                0 0 50px rgba(255, 255, 255, 0.12);  /* 邊緣微弱的琉璃發光 */
+                0 1px 2px rgba(255, 255, 255, 0.6),
+                0 4px 20px rgba(0, 0, 0, 0.85),
+                0 0 50px rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(0.5px);
             -webkit-backdrop-filter: blur(0.5px);
         }
@@ -115,6 +116,44 @@
             .time-display {
                 font-size: 340px;
             }
+        }
+
+        /* 每一位數字的 3D 翻轉動畫元件 (iOS 轉場質感) */
+        .digit-box {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 800px;
+        }
+
+        .digit-inner {
+            display: inline-block;
+            transition: transform 0.55s cubic-bezier(0.2, 1.2, 0.4, 1), opacity 0.4s ease;
+            transform-origin: center center;
+        }
+
+        /* 數字切換時的 iOS 彈性滑動與 3D 旋轉質感 */
+        .digit-inner.flip-out {
+            transform: translateY(-40px) rotateX(70deg) scale(0.9);
+            opacity: 0;
+        }
+
+        .digit-inner.flip-in {
+            transform: translateY(40px) rotateX(-70deg) scale(0.9);
+            opacity: 0;
+            animation: none;
+        }
+
+        .separator {
+            display: inline-block;
+            margin: 0 -0.05em;
+            animation: colonPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes colonPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
         }
 
         /* 蘋果高級毛玻璃擬態時區選單 */
@@ -240,6 +279,37 @@
             background: rgba(255, 255, 255, 0.15);
             border-radius: 3px;
         }
+
+        /* 測試控制面板 (方便您直接檢視 09:24 換到 09:25 的動態效果) */
+        .test-controls {
+            position: fixed;
+            bottom: 25px;
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+            background: rgba(20, 20, 25, 0.6);
+            padding: 10px 18px;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .test-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .test-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -249,8 +319,22 @@
         <div class="clock-content" id="clockContent">
             <!-- 雙擊地名呼叫隱藏選單 -->
             <div class="city-header" id="cityHeader" title="對著地名「雙擊兩下」選擇時區">載入中...</div>
-            <div class="time-display" id="timeDisplay">00:00</div>
+            
+            <!-- 時間顯示容器：每一位數字獨立封裝以支援 iOS 3D 彈性翻轉動畫 -->
+            <div class="time-display" id="timeDisplay">
+                <div class="digit-box"><span class="digit-inner" id="d0">0</span></div>
+                <div class="digit-box"><span class="digit-inner" id="d1">9</span></div>
+                <div class="separator">:</div>
+                <div class="digit-box"><span class="digit-inner" id="d2">2</span></div>
+                <div class="digit-box"><span class="digit-inner" id="d3">4</span></div>
+            </div>
         </div>
+    </div>
+
+    <!-- 快速測試按鈕 (點擊可立即預覽 9:24 換到 9:25 的 iOS 高質感滑動動畫) -->
+    <div class="test-controls">
+        <button class="test-btn" id="btnTest">測試 09:24 → 09:25 動畫</button>
+        <button class="test-btn" id="btnNormal">恢復即時時鐘</button>
     </div>
 
     <!-- 24 時區選單彈窗 -->
@@ -265,7 +349,6 @@
     </div>
 
     <script>
-        // 24 個全球經典時區
         const timezones = [
             { name: "台北", zone: "Asia/Taipei", label: "UTC+8" },
             { name: "東京", zone: "Asia/Tokyo", label: "UTC+9" },
@@ -295,8 +378,9 @@
 
         let selectedTimezone = null;
         let selectedCityName = "";
+        let lastTimeString = "";
+        let isTestMode = false;
 
-        // 初始化：預設抓取目前裝置所在位置
         function initLocation() {
             try {
                 const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -315,7 +399,6 @@
             document.getElementById('cityHeader').textContent = selectedCityName;
         }
 
-        // 渲染時區清單
         function renderList() {
             const list = document.getElementById('timezoneList');
             list.innerHTML = '';
@@ -330,8 +413,7 @@
                     selectedTimezone = t.zone;
                     selectedCityName = t.name;
                     document.getElementById('cityHeader').textContent = selectedCityName;
-                    
-                    triggerTransitionAnim();
+                    isTestMode = false;
                     toggleModal(false);
                     renderList();
                 });
@@ -339,18 +421,36 @@
             });
         }
 
-        function triggerTransitionAnim() {
-            const content = document.getElementById('clockContent');
-            content.style.transform = 'scale(0.92)';
-            content.style.opacity = '0.2';
-            setTimeout(() => {
-                content.style.transform = 'scale(1)';
-                content.style.opacity = '1';
-            }, 300);
+        // 核心動畫更新函數：精準比對每一位數字，若有變動則套用 iOS 3D 彈性翻轉動畫
+        function updateDigit(elementId, newChar) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            if (el.textContent !== newChar) {
+                // 觸發向上的離場動畫
+                el.classList.add('flip-out');
+                setTimeout(() => {
+                    el.textContent = newChar;
+                    el.classList.remove('flip-out');
+                    el.classList.add('flip-in');
+                    // 瞬間重置進場狀態並滑回原位
+                    setTimeout(() => {
+                        el.classList.remove('flip-in');
+                    }, 30);
+                }, 270);
+            }
         }
 
-        // 更新時鐘
+        function setTimeString(timeStr) {
+            if (timeStr.length === 5) {
+                updateDigit('d0', timeStr[0]);
+                updateDigit('d1', timeStr[1]);
+                updateDigit('d2', timeStr[3]);
+                updateDigit('d3', timeStr[4]);
+            }
+        }
+
         function updateClock() {
+            if (isTestMode) return;
             const now = new Date();
             let timeStr = "";
 
@@ -368,13 +468,13 @@
                 timeStr = `${h}:${m}`;
             }
 
-            const timeEl = document.getElementById('timeDisplay');
-            if (timeEl.textContent !== timeStr) {
-                timeEl.textContent = timeStr;
+            if (timeStr !== lastTimeString) {
+                setTimeString(timeStr);
+                lastTimeString = timeStr;
             }
         }
 
-        // 彈窗雙擊互動控制
+        // 彈窗互動控制
         const overlay = document.getElementById('modalOverlay');
         const cityHeader = document.getElementById('cityHeader');
         const closeBtn = document.getElementById('modalClose');
@@ -387,7 +487,6 @@
             }
         }
 
-        // 雙擊 (dblclick) 觸發隱藏選單
         cityHeader.addEventListener('dblclick', () => {
             toggleModal(true);
         });
@@ -395,6 +494,29 @@
         closeBtn.addEventListener('click', () => toggleModal(false));
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) toggleModal(false);
+        });
+
+        // 模擬測試：重現從 09:24 換到 09:25 的高質感動畫
+        document.getElementById('btnTest').addEventListener('click', () => {
+            isTestMode = true;
+            // 先強制設為 09:24
+            document.getElementById('d0').textContent = '0';
+            document.getElementById('d1').textContent = '9';
+            document.getElementById('d2').textContent = '2';
+            document.getElementById('d3').textContent = '4';
+            lastTimeString = "09:24";
+
+            // 1秒後自動觸發動畫切換到 09:25
+            setTimeout(() => {
+                setTimeString("09:25");
+                lastTimeString = "09:25";
+            }, 1000);
+        });
+
+        document.getElementById('btnNormal').addEventListener('click', () => {
+            isTestMode = false;
+            lastTimeString = "";
+            updateClock();
         });
 
         // 啟動執行
